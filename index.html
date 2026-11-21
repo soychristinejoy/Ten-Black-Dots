@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Great Ten-Dot Challenge!</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-cream: #fff5ea;
+      --bg-blush: #ffe8d6;
+      --card-surface: #ffffff;
+      --dock-surface: #fff0df;
+      --ink-main: #2d2424;
+      --ink-muted: #57453e;
+      --accent-orange: #ea6b2f;
+      --accent-orange-dark: #c6521b;
+      --border-dashed: #f2aa74;
+      --shadow-soft: 0 10px 25px rgba(136, 74, 35, 0.14);
+      --shadow-btn: 0 4px 0 rgba(162, 86, 36, 0.22);
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      padding: 12px 16px;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Nunito', Arial, sans-serif;
+      background:
+        linear-gradient(180deg, rgba(255, 245, 234, 0.72) 0%, rgba(255, 232, 214, 0.76) 100%),
+        url("https://m.media-amazon.com/images/I/71A31IycRrL._SL1067_.jpg") center / cover fixed no-repeat;
+      text-align: center;
+      color: var(--ink-main);
+    }
+
+    .app-shell {
+      max-width: 1360px;
+      height: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    header.hero {
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.86);
+      backdrop-filter: blur(6px);
+      border: 2px solid rgba(243, 173, 117, 0.45);
+      border-radius: 18px;
+      padding: 8px 18px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    h1 {
+      font-family: 'Fredoka', Arial, sans-serif;
+      font-size: clamp(1.65rem, 3.4vw, 2.35rem);
+      font-weight: 700;
+      color: var(--accent-orange);
+      margin: 0 0 2px;
+      letter-spacing: 0.3px;
+      text-shadow: 0 2px 0 rgba(255, 255, 255, 0.9);
+      line-height: 1.12;
+    }
+
+    .prompt {
+      font-size: clamp(0.8rem, 1.35vw, 0.95rem);
+      font-weight: 800;
+      color: var(--ink-muted);
+      margin: 0 auto;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* 3-Column Workspace: Left Dot Tray + Large Center Drawing Pad + Right Tools Sidebar */
+    #workspace {
+      position: relative;
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      gap: 14px;
+      touch-action: none;
+      user-select: none;
+    }
+
+    #dot-tray {
+      width: 146px;
+      flex-shrink: 0;
+      background: rgba(255, 240, 223, 0.94);
+      backdrop-filter: blur(6px);
+      border: 3px solid #f2ba88;
+      border-radius: 22px;
+      padding: 12px 10px;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 4;
+    }
+
+    .tray-title {
+      font-family: 'Fredoka', Arial, sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #7c4724;
+      margin: 0;
+    }
+
+    .tray-sub {
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: #966647;
+      margin: 2px 0 4px;
+    }
+
+    .tray-grid {
+      width: 100%;
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      align-items: center;
+      justify-items: center;
+      padding: 2px;
+    }
+
+    .dot-slot {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(234, 107, 47, 0.1);
+      border: 2px dashed rgba(212, 128, 74, 0.55);
+      display: grid;
+      place-items: center;
+    }
+
+    #board {
+      position: relative;
+      flex: 1;
+      height: 100%;
+      min-width: 0;
+      background: var(--card-surface);
+      border: 4px dashed var(--border-dashed);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow:
+        0 14px 32px rgba(138, 76, 36, 0.14),
+        inset 0 0 0 8px #fffaf5;
+    }
+
+    .pad-header-fields {
+      position: absolute;
+      top: 14px;
+      left: 18px;
+      right: 18px;
+      z-index: 4;
+      display: flex;
+      flex-direction: row;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 22px;
+      flex-wrap: nowrap;
+      text-align: left;
+      pointer-events: auto;
+    }
+
+    .pad-field {
+      font-family: 'Fredoka', Arial, sans-serif;
+      font-size: 0.98rem;
+      font-weight: 600;
+      color: #5a4339;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+      background: rgba(255, 250, 245, 0.92);
+      padding: 3px 10px 3px 8px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(136, 74, 35, 0.06);
+      white-space: nowrap;
+    }
+
+    .pad-field.name-field {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .pad-field.no-field {
+      flex: 0 0 auto;
+    }
+
+    .pad-line-input {
+      font-family: 'Nunito', Arial, sans-serif;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #2d2424;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid #b88460;
+      outline: none;
+      padding: 1px 4px 2px;
+      height: 24px;
+      line-height: 20px;
+      border-radius: 0;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .pad-line-input:focus {
+      border-bottom-color: var(--accent-orange);
+      background: rgba(255, 190, 107, 0.16);
+    }
+
+    #studentNameInput {
+      width: 100%;
+      min-width: 140px;
+    }
+
+    #studentNoInput {
+      width: 105px;
+    }
+
+    .pad-watermark {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+      z-index: 1;
+      font-family: 'Fredoka', Arial, sans-serif;
+      font-size: 1.25rem;
+      color: rgba(168, 122, 92, 0.22);
+      padding: 20px;
+    }
+
+    /* Right-Hand Toolbar Sidebar */
+    .toolbar-sidebar {
+      width: 264px;
+      flex-shrink: 0;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      border: 2px solid rgba(243, 173, 117, 0.45);
+      border-radius: 22px;
+      padding: 12px 12px;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 9px;
+      overflow-y: auto;
+      z-index: 4;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      background: #fff8f0;
+      border: 1.5px solid #f4c69b;
+      color: #6b452d;
+      font-size: 0.82rem;
+      font-weight: 800;
+      padding: 5px 10px;
+      border-radius: 999px;
+      width: 100%;
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--accent-orange);
+      flex-shrink: 0;
+    }
+
+    .dot-sizer-bar {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      background: #fff7ed;
+      border: 1.5px solid #f1bd8d;
+      border-radius: 14px;
+      padding: 6px 8px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #653f27;
+      width: 100%;
+    }
+
+    .dot-sizer-bar.visible {
+      display: flex;
+    }
+
+    .dot-sizer-bar button {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: none;
+      background: #ffbe6b;
+      color: #2d2018;
+      font-weight: 900;
+      font-size: 0.95rem;
+      line-height: 1;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+
+    .dot-sizer-bar button:hover {
+      background: #ffa947;
+    }
+
+    .dot-sizer-bar input[type="range"] {
+      width: 82px;
+      accent-color: var(--accent-orange);
+      cursor: pointer;
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      width: 100%;
+    }
+
+    button.tool-btn {
+      font-family: 'Nunito', Arial, sans-serif;
+      font-weight: 800;
+      font-size: 0.85rem;
+      padding: 9px 8px;
+      border: none;
+      border-radius: 13px;
+      cursor: pointer;
+      background: #ffbe6b;
+      color: #2d2018;
+      box-shadow: var(--shadow-btn);
+      transition: transform 0.12s ease, background 0.15s ease, box-shadow 0.12s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      width: 100%;
+    }
+
+    button.tool-btn:hover {
+      background: #ffa947;
+      transform: translateY(-1px);
+    }
+
+    button.tool-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 rgba(162, 86, 36, 0.22);
+    }
+
+    button.tool-btn.active-mode {
+      background: var(--accent-orange);
+      color: #ffffff;
+      box-shadow: 0 4px 0 var(--accent-orange-dark);
+    }
+
+    button.tool-btn.secondary {
+      background: #fff0df;
+      color: #5a3c2b;
+      border: 1.5px solid #f0be92;
+      box-shadow: 0 3px 0 rgba(196, 134, 82, 0.2);
+    }
+
+    button.tool-btn.secondary:hover {
+      background: #ffe2c4;
+    }
+
+    button.tool-btn.save-btn {
+      background: #2bb673;
+      color: #ffffff;
+      box-shadow: 0 4px 0 #1b8753;
+    }
+
+    button.tool-btn.save-btn:hover {
+      background: #239f63;
+    }
+
+    .marker-size-bar {
+      width: 100%;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 9px;
+      border-radius: 14px;
+      background: #fff7ed;
+      border: 1.5px solid #f4c69b;
+    }
+
+    .marker-size-bar.visible {
+      display: flex;
+    }
+
+    .marker-size-header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .marker-size-label {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #6b452d;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .marker-presets-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 5px;
+      width: 100%;
+    }
+
+    .size-preset-btn {
+      font-family: 'Nunito', Arial, sans-serif;
+      font-size: 0.76rem;
+      font-weight: 800;
+      padding: 4px 6px;
+      border-radius: 999px;
+      border: 1.5px solid #e6b082;
+      background: #ffffff;
+      color: #5a3c2b;
+      cursor: pointer;
+      transition: background 0.14s ease, color 0.14s ease, transform 0.12s ease;
+    }
+
+    .size-preset-btn:hover {
+      background: #ffe5c9;
+    }
+
+    .size-preset-btn.active {
+      background: var(--accent-orange);
+      border-color: var(--accent-orange);
+      color: #ffffff;
+    }
+
+    .marker-slider-row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 7px;
+    }
+
+    .marker-slider-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #5a3c2b;
+      flex: 1;
+    }
+
+    .marker-slider-wrap input[type="range"] {
+      width: 100%;
+      min-width: 72px;
+      accent-color: var(--accent-orange);
+      cursor: pointer;
+    }
+
+    .marker-preview-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      background: #ffffff;
+      border: 1.5px dashed #e6b082;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .marker-preview-dot {
+      border-radius: 50%;
+      background: #ff4d6d;
+      opacity: 0.45;
+      transition: width 0.12s ease, height 0.12s ease, background 0.12s ease;
+    }
+
+    .palette-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      padding-top: 8px;
+      border-top: 1.5px dashed rgba(234, 107, 47, 0.24);
+      width: 100%;
+    }
+
+    .palette-label {
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--ink-muted);
+    }
+
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      justify-items: center;
+      width: 100%;
+    }
+
+    .swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2.5px solid #ffffff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16), inset 0 2px 3px rgba(255, 255, 255, 0.35);
+      cursor: pointer;
+      transition: transform 0.16s ease, box-shadow 0.16s ease;
+      padding: 0;
+      position: relative;
+    }
+
+    .swatch:hover {
+      transform: scale(1.12);
+    }
+
+    .swatch.active {
+      transform: scale(1.15);
+      box-shadow:
+        0 0 0 2.5px var(--accent-orange),
+        0 4px 9px rgba(0, 0, 0, 0.22);
+    }
+
+    .swatch.active::after {
+      content: "✓";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 900;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    }
+
+    .dot {
+      position: fixed;
+      width: 36px;
+      height: 36px;
+      background: radial-gradient(circle at 30% 28%, #4a4a4a 0%, #161616 58%, #050505 100%);
+      border-radius: 50%;
+      cursor: grab;
+      touch-action: none;
+      z-index: 20;
+      box-shadow:
+        0 5px 10px rgba(0, 0, 0, 0.28),
+        inset 0 2px 3px rgba(255, 255, 255, 0.22);
+      transition: box-shadow 0.12s ease;
+    }
+
+    .dot:hover {
+      box-shadow:
+        0 7px 14px rgba(0, 0, 0, 0.32),
+        inset 0 2px 3px rgba(255, 255, 255, 0.25);
+    }
+
+    .dot.selected {
+      outline: 3px solid var(--accent-orange);
+      outline-offset: 2px;
+    }
+
+    .dot.dragging,
+    .dot.resizing {
+      cursor: grabbing;
+      box-shadow:
+        0 12px 20px rgba(0, 0, 0, 0.36),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+      z-index: 50;
+    }
+
+    .dot-resize-handle {
+      position: absolute;
+      right: -4px;
+      bottom: -4px;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2.5px solid var(--accent-orange);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.28);
+      cursor: nwse-resize;
+      display: none;
+      place-items: center;
+      font-size: 9px;
+      line-height: 1;
+      color: var(--accent-orange-dark);
+      font-weight: 900;
+      touch-action: none;
+    }
+
+    .dot:hover .dot-resize-handle,
+    .dot.selected .dot-resize-handle,
+    .dot.resizing .dot-resize-handle {
+      display: grid;
+    }
+
+    #drawing {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+      z-index: 2;
+    }
+
+    @media (max-width: 900px) {
+      html, body {
+        height: auto;
+        overflow: auto;
+      }
+
+      .app-shell {
+        height: auto;
+      }
+
+      .prompt {
+        white-space: normal;
+        font-size: 0.86rem;
+      }
+
+      #workspace {
+        flex-direction: column;
+        height: auto;
+        gap: 12px;
+      }
+
+      #dot-tray {
+        width: 100%;
+        padding: 10px 12px;
+      }
+
+      .tray-grid {
+        grid-template-columns: repeat(10, 1fr);
+        gap: 6px;
+      }
+
+      .dot-slot {
+        width: 36px;
+        height: 36px;
+      }
+
+      #board {
+        width: 100%;
+        height: 410px;
+        flex: none;
+        border-radius: 18px;
+      }
+
+      .toolbar-sidebar {
+        width: 100%;
+        height: auto;
+      }
+
+      .tools-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .palette-grid {
+        grid-template-columns: repeat(14, 1fr);
+      }
+
+      .pad-header-fields {
+        gap: 10px;
+        top: 12px;
+        left: 12px;
+        right: 12px;
+      }
+
+      .pad-field {
+        font-size: 0.84rem;
+        padding: 2px 7px 2px 6px;
+      }
+
+      #studentNameInput {
+        min-width: 90px;
+        font-size: 0.84rem;
+      }
+
+      #studentNoInput {
+        width: 72px;
+        font-size: 0.84rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <h1>The Great Ten-Dot Challenge!</h1>
+      <p class="prompt">Drag dots from the 10 Dots Tray onto the drawing pad, use Pencil to sketch outlines, and use Marker to color!</p>
+    </header>
+
+    <div id="workspace">
+      <aside id="dot-tray" aria-label="Ten Black Dots Tray">
+        <div>
+          <p class="tray-title">10 Dots Tray</p>
+          <p class="tray-sub">Drag to pad →</p>
+        </div>
+        <div class="tray-grid" id="trayGrid"></div>
+      </aside>
+
+      <div id="board" aria-label="Drawing Pad">
+        <div class="pad-header-fields">
+          <label class="pad-field name-field" for="studentNameInput">
+            <span>Name:</span>
+            <input type="text" id="studentNameInput" class="pad-line-input" autocomplete="off" placeholder="" aria-label="Name" />
+          </label>
+          <label class="pad-field no-field" for="studentNoInput">
+            <span>Student No.:</span>
+            <input type="text" id="studentNoInput" class="pad-line-input" autocomplete="off" placeholder="" aria-label="Student No." />
+          </label>
+        </div>
+        <div class="pad-watermark">Drag dots here &amp; draw!</div>
+        <canvas id="drawing"></canvas>
+      </div>
+
+      <aside class="toolbar-sidebar" aria-label="Drawing Tools and Colors">
+        <div class="status-pill" id="statusPill">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusText">Mode: Move Dots</span>
+        </div>
+
+        <div class="dot-sizer-bar" id="dotSizerBar" aria-label="Selected Dot Size Controls">
+          <span>Dot:</span>
+          <button type="button" id="dotSizeDec" title="Smaller dot" aria-label="Smaller dot">−</button>
+          <input type="range" id="dotSizeSlider" min="20" max="110" step="2" value="36" aria-label="Dot size slider" />
+          <button type="button" id="dotSizeInc" title="Larger dot" aria-label="Larger dot">+</button>
+          <span id="dotSizeValue">36px</span>
+        </div>
+
+        <div class="tools-grid" role="group" aria-label="Drawing and Dot Tools">
+          <button type="button" class="tool-btn active-mode" id="btn-move" onclick="setMode('move')">⚫ Move Dots</button>
+          <button type="button" class="tool-btn" id="btn-pencil" onclick="setMode('pencil')">✏️ Pencil</button>
+          <button type="button" class="tool-btn" id="btn-marker" onclick="setMode('marker')">🖍️ Marker</button>
+          <button type="button" class="tool-btn" id="btn-erase" onclick="setMode('erase')">🧽 Erase</button>
+          <button type="button" class="tool-btn secondary" onclick="clearDrawing()">Clear</button>
+          <button type="button" class="tool-btn save-btn" onclick="downloadArt()">📥 Save</button>
+        </div>
+
+        <div class="marker-size-bar" id="markerSizeBar" aria-label="Marker Brush Thickness">
+          <div class="marker-size-header">
+            <span class="marker-size-label">Marker Size</span>
+            <span class="marker-size-label" id="markerSizeValue">20px</span>
+          </div>
+          <div class="marker-presets-grid">
+            <button type="button" class="size-preset-btn" data-size="10" onclick="setMarkerSize(10)">Thin</button>
+            <button type="button" class="size-preset-btn active" data-size="20" onclick="setMarkerSize(20)">Medium</button>
+            <button type="button" class="size-preset-btn" data-size="34" onclick="setMarkerSize(34)">Thick</button>
+            <button type="button" class="size-preset-btn" data-size="50" onclick="setMarkerSize(50)">Extra Thick</button>
+          </div>
+          <div class="marker-slider-row">
+            <div class="marker-slider-wrap">
+              <input type="range" id="markerSizeSlider" min="6" max="60" step="2" value="20" aria-label="Custom marker size" />
+            </div>
+            <div class="marker-preview-box" title="Marker stroke preview">
+              <div class="marker-preview-dot" id="markerPreviewDot"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="palette-section" role="group" aria-label="Color Swatches">
+          <span class="palette-label">Colors</span>
+          <div class="palette-grid">
+            <button type="button" class="swatch active" data-color="#ff4d6d" data-name="Pink" style="background: #ff4d6d;" title="Pink" aria-label="Pink"></button>
+            <button type="button" class="swatch" data-color="#ff2e38" data-name="Red" style="background: #ff2e38;" title="Red" aria-label="Red"></button>
+            <button type="button" class="swatch" data-color="#ff7b29" data-name="Orange" style="background: #ff7b29;" title="Orange" aria-label="Orange"></button>
+            <button type="button" class="swatch" data-color="#ffb703" data-name="Yellow" style="background: #ffb703;" title="Yellow" aria-label="Yellow"></button>
+            <button type="button" class="swatch" data-color="#8ac926" data-name="Lime" style="background: #8ac926;" title="Lime" aria-label="Lime"></button>
+            <button type="button" class="swatch" data-color="#2ecc71" data-name="Green" style="background: #2ecc71;" title="Green" aria-label="Green"></button>
+            <button type="button" class="swatch" data-color="#2ec4b6" data-name="Teal" style="background: #2ec4b6;" title="Teal" aria-label="Teal"></button>
+            <button type="button" class="swatch" data-color="#4cc9f0" data-name="Sky Blue" style="background: #4cc9f0;" title="Sky Blue" aria-label="Sky Blue"></button>
+            <button type="button" class="swatch" data-color="#3498db" data-name="Blue" style="background: #3498db;" title="Blue" aria-label="Blue"></button>
+            <button type="button" class="swatch" data-color="#9b59b6" data-name="Purple" style="background: #9b59b6;" title="Purple" aria-label="Purple"></button>
+            <button type="button" class="swatch" data-color="#f72585" data-name="Magenta" style="background: #f72585;" title="Magenta" aria-label="Magenta"></button>
+            <button type="button" class="swatch" data-color="#ffafcc" data-name="Pastel Pink" style="background: #ffafcc;" title="Pastel Pink" aria-label="Pastel Pink"></button>
+            <button type="button" class="swatch" data-color="#8d5524" data-name="Brown" style="background: #8d5524;" title="Brown" aria-label="Brown"></button>
+            <button type="button" class="swatch" data-color="#222222" data-name="Black" style="background: #222222;" title="Black" aria-label="Black"></button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const trayGrid = document.getElementById("trayGrid");
+    const board = document.getElementById("board");
+    const canvas = document.getElementById("drawing");
+    const ctx = canvas.getContext("2d");
+    const studentNameInput = document.getElementById("studentNameInput");
+    const studentNoInput = document.getElementById("studentNoInput");
+    const swatches = document.querySelectorAll(".swatch");
+    const statusText = document.getElementById("statusText");
+    const statusDot = document.getElementById("statusDot");
+
+    const markerSizeBar = document.getElementById("markerSizeBar");
+    const markerSizeSlider = document.getElementById("markerSizeSlider");
+    const markerSizeValue = document.getElementById("markerSizeValue");
+    const markerPreviewDot = document.getElementById("markerPreviewDot");
+    const sizePresetBtns = document.querySelectorAll(".size-preset-btn");
+
+    const dotSizerBar = document.getElementById("dotSizerBar");
+    const dotSizeSlider = document.getElementById("dotSizeSlider");
+    const dotSizeValue = document.getElementById("dotSizeValue");
+    const dotSizeDec = document.getElementById("dotSizeDec");
+    const dotSizeInc = document.getElementById("dotSizeInc");
+
+    const MIN_DOT_SIZE = 20;
+    const MAX_DOT_SIZE = 110;
+
+    let mode = "move";
+    let selectedColor = "#ff4d6d";
+    let selectedColorName = "Pink";
+    let markerSize = 20;
+    let drawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    let activeDotObj = null;
+    let resizingDotObj = null;
+    let selectedDotObj = null;
+    let resizeStartX = 0;
+    let resizeStartY = 0;
+    let resizeStartSize = 36;
+    let offsetX = 0;
+    let offsetY = 0;
+    let dotItems = [];
+
+    function hexToRgba(hex, alpha) {
+      const clean = hex.replace("#", "");
+      const num = parseInt(clean, 16);
+      const r = (num >> 16) & 255;
+      const g = (num >> 8) & 255;
+      const b = num & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function updateMarkerPreview() {
+      markerSizeSlider.value = markerSize;
+      markerSizeValue.textContent = `${markerSize}px`;
+      const visualSize = Math.max(6, Math.min(30, Math.round(markerSize * 0.65)));
+      markerPreviewDot.style.width = `${visualSize}px`;
+      markerPreviewDot.style.height = `${visualSize}px`;
+      markerPreviewDot.style.background = selectedColor;
+      markerPreviewDot.style.opacity = "0.45";
+
+      sizePresetBtns.forEach((btn) => {
+        btn.classList.toggle("active", Number(btn.dataset.size) === markerSize);
+      });
+    }
+
+    function setMarkerSize(size) {
+      markerSize = Math.max(6, Math.min(60, Number(size)));
+      updateMarkerPreview();
+    }
+
+    markerSizeSlider.addEventListener("input", (e) => {
+      setMarkerSize(e.target.value);
+    });
+
+    function updateDotSizerUI() {
+      if (!selectedDotObj) {
+        dotSizerBar.classList.remove("visible");
+        return;
+      }
+      dotSizerBar.classList.add("visible");
+      dotSizeSlider.value = selectedDotObj.size;
+      dotSizeValue.textContent = `${selectedDotObj.size}px`;
+    }
+
+    function selectDot(item) {
+      if (selectedDotObj && selectedDotObj.el !== item?.el) {
+        selectedDotObj.el.classList.remove("selected");
+      }
+      selectedDotObj = item || null;
+      if (selectedDotObj) {
+        selectedDotObj.el.classList.add("selected");
+      }
+      updateDotSizerUI();
+    }
+
+    function applyDotSize(item, newSize) {
+      if (!item) return;
+      const clamped = Math.max(MIN_DOT_SIZE, Math.min(MAX_DOT_SIZE, Math.round(newSize)));
+      item.size = clamped;
+      item.el.style.width = `${clamped}px`;
+      item.el.style.height = `${clamped}px`;
+
+      if (item.onPad) {
+        positionPadDot(item);
+      } else if (item !== activeDotObj) {
+        snapDotToSlot(item);
+      }
+
+      if (item === selectedDotObj) {
+        updateDotSizerUI();
+      }
+    }
+
+    dotSizeSlider.addEventListener("input", (e) => {
+      if (selectedDotObj) {
+        applyDotSize(selectedDotObj, Number(e.target.value));
+      }
+    });
+
+    dotSizeDec.addEventListener("click", () => {
+      if (selectedDotObj) {
+        applyDotSize(selectedDotObj, selectedDotObj.size - 4);
+      }
+    });
+
+    dotSizeInc.addEventListener("click", () => {
+      if (selectedDotObj) {
+        applyDotSize(selectedDotObj, selectedDotObj.size + 4);
+      }
+    });
+
+    function updateStatus() {
+      if (mode === "move") {
+        statusText.textContent = "Mode: Move Dots";
+        statusDot.style.background = "#222222";
+      } else if (mode === "pencil") {
+        statusText.textContent = `Pencil (${selectedColorName})`;
+        statusDot.style.background = selectedColor;
+      } else if (mode === "marker") {
+        statusText.textContent = `Marker (${selectedColorName}, ${markerSize}px)`;
+        statusDot.style.background = selectedColor;
+      } else if (mode === "erase") {
+        statusText.textContent = "Mode: Eraser";
+        statusDot.style.background = "#f3ad75";
+      }
+      markerSizeBar.classList.toggle("visible", mode === "marker");
+      updateMarkerPreview();
+    }
+
+    swatches.forEach((swatch) => {
+      swatch.addEventListener("click", () => {
+        swatches.forEach((s) => s.classList.remove("active"));
+        swatch.classList.add("active");
+        selectedColor = swatch.dataset.color;
+        selectedColorName = swatch.dataset.name;
+        if (mode === "move" || mode === "erase") {
+          setMode("marker");
+        } else {
+          updateStatus();
+        }
+      });
+    });
+
+    function setupCanvas() {
+      const old = document.createElement("canvas");
+      old.width = canvas.width;
+      old.height = canvas.height;
+      old.getContext("2d").drawImage(canvas, 0, 0);
+
+      canvas.width = board.clientWidth;
+      canvas.height = board.clientHeight;
+      ctx.drawImage(
+        old,
+        0,
+        0,
+        old.width,
+        old.height,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+    }
+
+    function snapDotToSlot(item) {
+      const slotRect = item.slot.getBoundingClientRect();
+      const dotSize = item.size;
+      const left = slotRect.left + (slotRect.width - dotSize) / 2;
+      const top = slotRect.top + (slotRect.height - dotSize) / 2;
+      item.el.style.left = `${left}px`;
+      item.el.style.top = `${top}px`;
+      item.onPad = false;
+    }
+
+    function positionPadDot(item) {
+      const dotSize = item.size;
+      const maxRelX = Math.max(0, board.clientWidth - dotSize);
+      const maxRelY = Math.max(0, board.clientHeight - dotSize);
+      item.relX = Math.max(0, Math.min(maxRelX, item.relX));
+      item.relY = Math.max(0, Math.min(maxRelY, item.relY));
+
+      const boardRect = board.getBoundingClientRect();
+      item.el.style.left = `${boardRect.left + item.relX}px`;
+      item.el.style.top = `${boardRect.top + item.relY}px`;
+    }
+
+    function repositionAllDots() {
+      dotItems.forEach((item) => {
+        item.el.style.width = `${item.size}px`;
+        item.el.style.height = `${item.size}px`;
+        if (item === activeDotObj || item === resizingDotObj) return;
+        if (item.onPad) {
+          positionPadDot(item);
+        } else {
+          snapDotToSlot(item);
+        }
+      });
+    }
+
+    function createDots() {
+      trayGrid.innerHTML = "";
+      dotItems.forEach((item) => item.el.remove());
+      dotItems = [];
+
+      const initialSize = window.innerWidth <= 900 ? 30 : 36;
+
+      for (let i = 0; i < 10; i++) {
+        const slot = document.createElement("div");
+        slot.className = "dot-slot";
+        trayGrid.appendChild(slot);
+
+        const dot = document.createElement("div");
+        dot.className = "dot";
+        dot.style.width = `${initialSize}px`;
+        dot.style.height = `${initialSize}px`;
+        dot.setAttribute("aria-label", `Black dot ${i + 1}`);
+
+        const handle = document.createElement("span");
+        handle.className = "dot-resize-handle";
+        handle.title = "Drag to resize dot";
+        handle.setAttribute("aria-label", `Resize black dot ${i + 1}`);
+        handle.textContent = "⤡";
+        dot.appendChild(handle);
+
+        document.body.appendChild(dot);
+
+        const item = {
+          el: dot,
+          handle,
+          slot,
+          size: initialSize,
+          onPad: false,
+          relX: 0,
+          relY: 0
+        };
+
+        handle.addEventListener("pointerdown", (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          if (mode !== "move") {
+            setMode("move");
+          }
+          selectDot(item);
+          resizingDotObj = item;
+          resizeStartX = e.clientX;
+          resizeStartY = e.clientY;
+          resizeStartSize = item.size;
+          dot.classList.add("resizing");
+          handle.setPointerCapture(e.pointerId);
+        });
+
+        handle.addEventListener("pointermove", (e) => {
+          if (resizingDotObj !== item) return;
+          const delta = Math.max(e.clientX - resizeStartX, e.clientY - resizeStartY);
+          applyDotSize(item, resizeStartSize + delta);
+        });
+
+        function finishResize() {
+          if (resizingDotObj !== item) return;
+          dot.classList.remove("resizing");
+          resizingDotObj = null;
+        }
+
+        handle.addEventListener("pointerup", finishResize);
+        handle.addEventListener("pointercancel", finishResize);
+
+        dot.addEventListener("pointerdown", (e) => {
+          if (e.target === handle) return;
+          if (mode !== "move") {
+            setMode("move");
+          }
+          e.preventDefault();
+          selectDot(item);
+          activeDotObj = item;
+          dot.classList.add("dragging");
+          const rect = dot.getBoundingClientRect();
+          offsetX = e.clientX - rect.left;
+          offsetY = e.clientY - rect.top;
+          dot.setPointerCapture(e.pointerId);
+        });
+
+        dot.addEventListener("pointermove", (e) => {
+          if (activeDotObj !== item) return;
+          const dotSize = item.size;
+          const nextLeft = Math.max(8, Math.min(window.innerWidth - dotSize - 8, e.clientX - offsetX));
+          const nextTop = Math.max(8, Math.min(window.innerHeight - dotSize - 8, e.clientY - offsetY));
+          dot.style.left = `${nextLeft}px`;
+          dot.style.top = `${nextTop}px`;
+        });
+
+        function finishDotDrag() {
+          if (activeDotObj !== item) return;
+          dot.classList.remove("dragging");
+          activeDotObj = null;
+
+          const dotRect = dot.getBoundingClientRect();
+          const centerX = dotRect.left + dotRect.width / 2;
+          const centerY = dotRect.top + dotRect.height / 2;
+          const boardRect = board.getBoundingClientRect();
+
+          const overBoard =
+            centerX >= boardRect.left &&
+            centerX <= boardRect.right &&
+            centerY >= boardRect.top &&
+            centerY <= boardRect.bottom;
+
+          if (overBoard) {
+            item.onPad = true;
+            item.relX = dotRect.left - boardRect.left;
+            item.relY = dotRect.top - boardRect.top;
+            positionPadDot(item);
+          } else {
+            snapDotToSlot(item);
+          }
+        }
+
+        dot.addEventListener("pointerup", finishDotDrag);
+        dot.addEventListener("pointercancel", finishDotDrag);
+
+        dotItems.push(item);
+      }
+
+      requestAnimationFrame(repositionAllDots);
+    }
+
+    function setMode(m) {
+      mode = m;
+      canvas.style.pointerEvents = m === "move" ? "none" : "auto";
+      canvas.style.cursor =
+        m === "pencil"
+          ? "crosshair"
+          : m === "marker"
+          ? "cell"
+          : m === "erase"
+          ? "grab"
+          : "default";
+
+      document.querySelectorAll(".tool-btn").forEach((btn) => {
+        btn.classList.remove("active-mode");
+      });
+      const activeBtn = document.getElementById("btn-" + m);
+      if (activeBtn) {
+        activeBtn.classList.add("active-mode");
+      }
+      updateStatus();
+    }
+
+    function getPos(e) {
+      const r = canvas.getBoundingClientRect();
+      return {
+        x: e.clientX - r.left,
+        y: e.clientY - r.top
+      };
+    }
+
+    function applyStrokeStyle() {
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      if (mode === "erase") {
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.lineWidth = 28;
+        ctx.strokeStyle = "rgba(0,0,0,1)";
+      } else if (mode === "pencil") {
+        ctx.globalCompositeOperation = "source-over";
+        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = selectedColor;
+      } else if (mode === "marker") {
+        ctx.globalCompositeOperation = "source-over";
+        ctx.lineWidth = markerSize;
+        ctx.strokeStyle = hexToRgba(selectedColor, 0.42);
+      }
+    }
+
+    canvas.addEventListener("pointerdown", (e) => {
+      if (mode === "move") return;
+      selectDot(null);
+      drawing = true;
+      const p = getPos(e);
+      lastX = p.x;
+      lastY = p.y;
+
+      ctx.save();
+      ctx.beginPath();
+      applyStrokeStyle();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x + 0.01, p.y + 0.01);
+      ctx.stroke();
+      ctx.restore();
+
+      canvas.setPointerCapture(e.pointerId);
+    });
+
+    canvas.addEventListener("pointermove", (e) => {
+      if (!drawing) return;
+      const p = getPos(e);
+
+      ctx.save();
+      ctx.beginPath();
+      applyStrokeStyle();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      ctx.restore();
+
+      lastX = p.x;
+      lastY = p.y;
+    });
+
+    function stopDrawing() {
+      if (!drawing) return;
+      drawing = false;
+      ctx.beginPath();
+    }
+
+    canvas.addEventListener("pointerup", stopDrawing);
+    canvas.addEventListener("pointercancel", stopDrawing);
+
+    function clearDrawing() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function downloadArt() {
+      const output = document.createElement("canvas");
+      output.width = board.clientWidth;
+      output.height = board.clientHeight;
+      const c = output.getContext("2d");
+
+      c.fillStyle = "#ffffff";
+      c.fillRect(0, 0, output.width, output.height);
+
+      // Draw full-width Name: line and right-aligned Student No.: on one line
+      c.save();
+      c.font = "600 16px 'Fredoka', Arial, sans-serif";
+      c.fillStyle = "#5a4339";
+      c.strokeStyle = "#b88460";
+      c.lineWidth = 2;
+
+      const y = 34;
+      const leftMargin = 22;
+      const rightMargin = output.width - 22;
+      const noLineWidth = 105;
+      const noLabel = "Student No.:";
+      const noLabelWidth = c.measureText(noLabel).width;
+
+      const noLineEnd = rightMargin;
+      const noLineStart = noLineEnd - noLineWidth;
+      const noX = noLineStart - 8 - noLabelWidth;
+
+      c.fillText(noLabel, noX, y);
+      c.beginPath();
+      c.moveTo(noLineStart, y + 2);
+      c.lineTo(noLineEnd, y + 2);
+      c.stroke();
+
+      const studentNo = studentNoInput.value.trim();
+      if (studentNo) {
+        c.font = "800 15px 'Nunito', Arial, sans-serif";
+        c.fillStyle = "#2d2424";
+        c.fillText(studentNo, noLineStart + 6, y);
+      }
+
+      const nameLabel = "Name:";
+      c.font = "600 16px 'Fredoka', Arial, sans-serif";
+      c.fillStyle = "#5a4339";
+      c.fillText(nameLabel, leftMargin, y);
+
+      const nameLineStart = leftMargin + c.measureText(nameLabel).width + 8;
+      const nameLineEnd = Math.max(nameLineStart + 120, noX - 22);
+      c.beginPath();
+      c.moveTo(nameLineStart, y + 2);
+      c.lineTo(nameLineEnd, y + 2);
+      c.stroke();
+
+      const studentName = studentNameInput.value.trim();
+      if (studentName) {
+        c.font = "800 15px 'Nunito', Arial, sans-serif";
+        c.fillStyle = "#2d2424";
+        c.fillText(studentName, nameLineStart + 6, y);
+      }
+      c.restore();
+
+      c.drawImage(canvas, 0, 0, output.width, output.height);
+
+      dotItems.forEach((item) => {
+        if (!item.onPad) return;
+        const radius = item.size / 2;
+        const cx = item.relX + radius;
+        const cy = item.relY + radius;
+
+        c.save();
+        c.beginPath();
+        c.arc(cx, cy, radius, 0, Math.PI * 2);
+        const grad = c.createRadialGradient(
+          cx - radius * 0.3,
+          cy - radius * 0.3,
+          radius * 0.1,
+          cx,
+          cy,
+          radius
+        );
+        grad.addColorStop(0, "#4a4a4a");
+        grad.addColorStop(0.58, "#161616");
+        grad.addColorStop(1, "#050505");
+        c.fillStyle = grad;
+        c.fill();
+        c.restore();
+      });
+
+      const link = document.createElement("a");
+      link.download = "the-great-ten-dot-challenge.png";
+      link.href = output.toDataURL("image/png");
+      link.click();
+    }
+
+    setupCanvas();
+    createDots();
+    setMode("move");
+
+    window.addEventListener("resize", () => {
+      setupCanvas();
+      repositionAllDots();
+    });
+
+    window.addEventListener("scroll", repositionAllDots, { passive: true });
+  </script>
+</body>
+</html>
